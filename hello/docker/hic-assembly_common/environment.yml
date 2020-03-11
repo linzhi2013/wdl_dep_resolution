@@ -1,0 +1,5 @@
+fastp=0.20.0
+bowtie2=2.3.2
+samtools=1.4
+docxtpl
+jinja2

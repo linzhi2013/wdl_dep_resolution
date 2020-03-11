@@ -1,0 +1,8 @@
+world	1.2	/Users/mengguanliang/soft/learn/twisted/02/repo/world/world-1.2.tar.gz	python:>4,perl:<5
+hello	1.0	/Users/mengguanliang/soft/learn/twisted/02/repo/hello/hello-1.0.tar.gz	python:>3.7,perl:<6
+c 1.2 python /Users/mengguanliang/soft/learn/twisted/02/repo/hello/hello-1.0.tar.gz
+python  3.7 /Users/mengguanliang/soft/learn/twisted/02/repo/hello/hello-1.0.tar.gz
+perl  5 /Users/mengguanliang/soft/learn/twisted/02/repo/hello/hello-1.0.tar.gz
+perl  5.6 /Users/mengguanliang/soft/learn/twisted/02/repo/hello/hello-1.0.tar.gz
+perl  6 /Users/mengguanliang/soft/learn/twisted/02/repo/hello/hello-1.0.tar.gz
+python  4 /Users/mengguanliang/soft/learn/twisted/02/repo/hello/hello-1.0.tar.gz
