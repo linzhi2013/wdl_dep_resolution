@@ -136,9 +136,9 @@ def get_pkg_ver_path(wdl_package_info_file=None):
 def main():
     args = get_para()
 
-    #wdl_package_info_file = os.path.join(args.repo_url, 'wdl_package_info.txt')
+    wdl_package_info_file = os.path.join(args.repo_url, 'wdl_package_info.txt')
 
-    wdl_package_info_file = 'wdl_package_info.txt'
+ #   wdl_package_info_file = 'wdl_package_info.txt'
 
     pkg_version_path = get_pkg_ver_path(wdl_package_info_file)
 
