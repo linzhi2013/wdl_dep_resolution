@@ -80,6 +80,8 @@ def main():
 
     pkg_info = read_pkg_info(args.c)
 
+    pkg_info['name'] = pkg_info['name'].replace('-', '_').lower()
+
 
     src_files = get_src_files(src_dir='./')
 
