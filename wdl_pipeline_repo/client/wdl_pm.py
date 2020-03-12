@@ -207,7 +207,7 @@ def update_wdl_import_paths(wdl_dir=None, pkg_name=None):
         if plt == 'Darwin':
             cmd = "sed -i '' 's#src/wdl/#src/deps/{pkg_name}/#g' {f}".format(pkg_name=pkg_name, f=f)
         else:
-            cmd = "sed 's#src/wdl/#src/deps/{pkg_name}/#g' {f}".format(pkg_name=pkg_name, f=f)
+            cmd = "sed -i 's#src/wdl/#src/deps/{pkg_name}/#g' {f}".format(pkg_name=pkg_name, f=f)
         print(cmd)
         subprocess.check_call(cmd, shell=True)
 
