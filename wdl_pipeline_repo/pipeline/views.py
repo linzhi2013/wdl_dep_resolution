@@ -45,7 +45,7 @@ def upload_file(request):
             print('got file name', file_name)
 
             # validate file name format
-            if not re.match(r'[a-z]+\_*[a-z0-9]*\-\d+(\.\d+)*\.tar\.gz$', file_name):
+            if not re.match(r'[a-z]+(\_[a-z0-9]+)*\-\d+(\.\d+)*\.tar\.gz$', file_name):
                 return HttpResponse("the uploaded file's filename format is not correct: {0}".format(file_name))
 
             pkg_name, version_str = file_name.split('-', 1)
