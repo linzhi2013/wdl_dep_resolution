@@ -103,7 +103,7 @@ def get_pkg_deps(temp_file_path, file_name):
     subprocess.check_call(cmd2, shell=True)
 
     # get the deps
-    pkg_info_file = os.path.join(cache_pkg_dir, 'packaging_info.txt')
+    pkg_info_file = os.path.join(cache_pkg_dir, 'pkg_info.txt')
 
     deps = []
     if os.path.exists(pkg_info_file):

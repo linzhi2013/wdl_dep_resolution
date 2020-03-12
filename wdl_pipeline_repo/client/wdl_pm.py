@@ -6,6 +6,8 @@ import argparse
 import collections
 import requests
 import subprocess
+import glob
+import platform
 
 from version_solver import pkg_verison_solver
 
@@ -177,6 +179,9 @@ def install_pkgs(pkg_cache_gz_file, project_root='./', cache_dir='./'):
     cmd = 'cp -r {0}/* {1}'.format(cache_pkg_src_wdl, project_src_deps)
     subprocess.check_call(cmd, shell=True)
 
+    # update import paths
+    update_wdl_import_paths(project_src_deps, pkg_name)
+
 
     # doc
     cache_pkg_doc = os.path.join(cache_pkg_dir, 'doc')
@@ -193,6 +198,18 @@ def install_pkgs(pkg_cache_gz_file, project_root='./', cache_dir='./'):
         os.makedirs(project_docker_deps)
     cmd = 'cp -r {0}/* {1}'.format(cache_pkg_docker, project_docker_deps)
     subprocess.check_call(cmd, shell=True)
+
+
+def update_wdl_import_paths(wdl_dir=None, pkg_name=None):
+    wdl_files = glob.glob(wdl_dir + '/**/*.wdl', recursive=True)
+    plt = platform.system()
+    for f in wdl_files:
+        if plt == 'Darwin':
+            cmd = "sed -i '' 's#src/wdl/#src/deps/{pkg_name}/#g' {f}".format(pkg_name=pkg_name, f=f)
+        else:
+            cmd = "sed 's#src/wdl/#src/deps/{pkg_name}/#g' {f}".format(pkg_name=pkg_name, f=f)
+        print(cmd)
+        subprocess.check_call(cmd, shell=True)
 
 
 
