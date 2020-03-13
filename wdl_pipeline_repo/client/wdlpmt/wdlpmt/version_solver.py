@@ -189,12 +189,13 @@ def pkg_verison_solver(metadata_file=None, query_pkg_version=None):
 
 
 if __name__ == '__main__':
-    result = pkg_verison_solver(
-        metadata_file='wdl_package_info.txt',
-        query_pkg_version={"hic": "1.0"})
+    print('Please read the code!')
+    #result = pkg_verison_solver(
+    #    metadata_file='wdl_package_info.txt',
+    #    query_pkg_version={"hic": "1.0"})
 
 
-    print(result.decisions)
+    #print(result.decisions)
 
 
 
