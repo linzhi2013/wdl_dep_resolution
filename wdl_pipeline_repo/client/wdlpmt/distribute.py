@@ -90,6 +90,7 @@ def main(parser=None, paras=None):
         sys.exit()
 
     args = parser.parse_args(paras)
+    args.project_root = os.path.abspath(args.project_root)
 
     print(args)
 

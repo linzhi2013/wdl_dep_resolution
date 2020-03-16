@@ -7,6 +7,7 @@ from install import main as install_main
 from submit import main as submit_main
 from create_module import main as create_module_main
 from create_project import main as create_project_main
+from distribute import main as distribute_main
 
 
 def get_para():
@@ -29,6 +30,9 @@ def get_para():
     create_module_parser = subparsers.add_parser('create_module',
         help='create basic directory for a module')
 
+    distribute_parser = subparsers.add_parser('distribute',
+        help='package your project')
+
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -48,6 +52,10 @@ def get_para():
 
     elif sys.argv[1] == 'create_module':
         create_project_main(create_module_parser, sys.argv[2:])
+
+    elif sys.argv[1] == 'distribute':
+        distribute_main(distribute_parser, sys.argv[2:])
+
 
 
 if __name__ == '__main__':

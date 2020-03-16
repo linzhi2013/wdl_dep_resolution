@@ -3,11 +3,12 @@ import sys
 import os
 import re
 import argparse
+import shutil
 
 def get_para(parser):
 
     parser.add_argument('-project_root', metavar='<directory>',
-        default='./', required=True,
+        default='./',
         help='the project_root directory [%(default)s]')
 
     parser.add_argument('-project_name', metavar='<file>', required=True, help="project name")
@@ -109,6 +110,9 @@ Project structure:
 {project_name}/config/deps # Where WDL input.json files can be installed by the wdlpmt tool.
 
 
+{project_name}/crommwell_configs # the example cromwell configure templates and shell scripts to run a WDL workflow
+
+
 {project_name}/test    # Where WDL tests will be created by youself.
 
         '''.format(project_name=project_name)
@@ -118,6 +122,15 @@ Project structure:
         print(content, file=fh)
 
     return readme_file
+
+
+def copy_cromwell_configs(project_path='./'):
+    source_crommwell_configs_dir = os.path.join(os.path.dirname(__file__), 'crommwell_configs')
+
+    dest_crommwell_configs_dir = os.path.join(project_path, 'crommwell_configs')
+
+    if os.path.exists(source_crommwell_configs_dir):
+        shutil.copytree(source_crommwell_configs_dir, dest_crommwell_configs_dir)
 
 
 
@@ -136,6 +149,8 @@ def create_project(project_root='./', project_name='my_new_wdl_pipeline'):
 
     create_pkg_info(project_path=project_path)
 
+    copy_cromwell_configs(project_path=project_path)
+
 
 
 def main(parser=None, paras=None):
@@ -150,6 +165,8 @@ def main(parser=None, paras=None):
         sys.exit()
 
     args = parser.parse_args(paras)
+
+    args.project_root = os.path.abspath(args.project_root)
 
     print(args)
 

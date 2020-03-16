@@ -11,7 +11,7 @@ def get_para(parser):
 
 
     parser.add_argument('-install_root', metavar='<directory>',
-        default='./', required=True,
+        default='./',
         help='the project_root directory [%(default)s]')
 
     return parser
@@ -104,6 +104,8 @@ def main(parser=None, paras=None):
         sys.exit()
 
     args = parser.parse_args(paras)
+
+    args.install_root = os.path.abspath(args.install_root)
 
     print(args)
 
