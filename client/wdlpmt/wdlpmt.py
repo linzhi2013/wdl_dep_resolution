@@ -51,7 +51,7 @@ def get_para():
         create_project_main(create_project_parser, sys.argv[2:])
 
     elif sys.argv[1] == 'create_module':
-        create_project_main(create_module_parser, sys.argv[2:])
+        create_module_main(create_module_parser, sys.argv[2:])
 
     elif sys.argv[1] == 'distribute':
         distribute_main(distribute_parser, sys.argv[2:])
