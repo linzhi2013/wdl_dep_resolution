@@ -23,19 +23,42 @@ def get_para(parser):
         default='_build',
         dest='build_dir', help="build directory name [%(default)s]")
 
+    parser.add_argument('-o', metavar='<file-or-directory>', nargs='*',
+        dest='other_files', help="Other files or directories you want to ship with. By default, only the src/ directory will be packaged.")
+
 
     return parser
 
 
 
-def create_dist(build_dir='_build', pkg_name='out', vesion='1.0', src_files=None):
+def create_dist(project_root='./', build_dir='_build', pkg_name='out', vesion='1.0', pkg_info_file=None, pack_deps=False, other_files=None):
+
+    # go to the project_root first.
+    os.chdir(project_root)
+
     pkg_name = pkg_name + '-' + vesion
     pkg_dir = os.path.join(build_dir, pkg_name)
+    os.makedirs(pkg_dir, exist_ok=True)
 
-    os.makedirs(pkg_dir)
-    for f in src_files:
-        cmd1 = 'cp -r {0} {1}'.format(f, pkg_dir)
-        subprocess.check_call(cmd1, shell=True)
+    # pkg_info_file
+    cmd1_0 = "cp {pkg_info_file} {pkg_dir}".format(pkg_info_file=pkg_info_file, pkg_dir=pkg_dir)
+    subprocess.check_call(cmd1_0, shell=True)
+
+    # the src and src/wdl directory
+    dest_src_dir = os.path.join(pkg_dir, 'src')
+    dest_src_wdl_dir = os.path.join(pkg_dir, 'src', 'wdl')
+    if pack_deps:
+        os.makedirs(dest_src_dir, exist_ok=True)
+        cmd1 = 'cp -rf src/* {}'.format(dest_src_dir)
+    else:
+        os.makedirs(dest_src_wdl_dir, exist_ok=True)
+        cmd1 = 'cp -rf src/wdl/* {}'.format(dest_src_wdl_dir)
+    subprocess.check_call(cmd1, shell=True)
+
+    if other_files:
+        for f in other_files:
+            cmd1_1 = 'cp -rf {0} {1}'.format(f, pkg_dir)
+            subprocess.check_call(cmd1_1, shell=True)
 
     os.chdir(build_dir)
 
@@ -51,11 +74,6 @@ def create_dist(build_dir='_build', pkg_name='out', vesion='1.0', src_files=None
     print('built file:', built_file)
 
     return built_file
-
-
-def get_src_files(src_dir='./'):
-    files = glob.glob(src_dir + '/*')
-    return files
 
 
 def read_pkg_info(pkg_info_file=None):
@@ -86,7 +104,7 @@ def main(parser=None, paras=None):
 
     parser = get_para(parser)
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 or len(paras) == 0:
         parser.print_help()
         sys.exit()
 
@@ -99,19 +117,14 @@ def main(parser=None, paras=None):
 
     pkg_info['name'] = pkg_info['name'].replace('-', '_').lower()
 
-    src_dir = os.path.join(args.project_root, 'src')
-    src_wdl_dir = os.path.join(args.project_root, 'src', 'wdl')
-
-    if args.pack_deps:
-        src_files = get_src_files(src_dir=src_dir)
-    else:
-        src_files = get_src_files(src_dir=src_wdl_dir)
-
     create_dist(
+        project_root=args.project_root,
         build_dir=args.build_dir,
         pkg_name=pkg_info['name'],
         vesion=pkg_info['version'],
-        src_files=src_files)
+        pkg_info_file=args.pkg_info_file,
+        pack_deps=args.pack_deps,
+        other_files=args.other_files)
 
 
 if __name__ == '__main__':

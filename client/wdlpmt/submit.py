@@ -3,7 +3,7 @@ import sys
 import argparse
 import os
 
-from utility import login_db
+from .utility import login_db
 
 
 def get_para(parser):
@@ -55,7 +55,7 @@ def main(parser=None, paras=None):
 
     parser = get_para(parser)
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 or len(paras) == 0:
         parser.print_help()
         sys.exit()
 

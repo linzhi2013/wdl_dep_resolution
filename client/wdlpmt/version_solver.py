@@ -13,7 +13,7 @@ from mixology.version_solver import VersionSolver
 
 # see https://github.com/sdispater/mixology
 
-# you need to install python-semver and mixology
+# you need to install poetry_semver and mixology
 
 class Dependency:
 

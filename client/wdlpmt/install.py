@@ -2,22 +2,34 @@ import os
 import glob
 import sys
 import argparse
+import subprocess
+import platform
+from .fetch import fetch_pkgs
 
 
 def get_para(parser):
     # install
-    parser.add_argument('-i', metavar='<file>', required=True,
-        dest='pkg_gz_files_listFile', help="pkg_gz_files_listFile")
+    parser.add_argument('-i', metavar='<file>',
+        dest='pkg_info_file', help="pkg_info.txt file")
 
+    parser.add_argument('-j', metavar='<file>',
+        dest='pkg_gz_files_listFile', help="a list of the downloaded *.tar.gz files")
 
     parser.add_argument('-install_root', metavar='<directory>',
         default='./',
         help='the project_root directory [%(default)s]')
 
+    parser.add_argument('-url', metavar='<url>',
+        default='http://127.0.0.1:8000/',
+        dest='base_url', help='Base url [%(default)s]')
+
+    parser.add_argument('-cache_dir', metavar='<directory>',
+        default='_wdl_cache', help='the cache directory [%(default)s]')
+
     return parser
 
 
-def deal_single_pkg(pkg_gz_file, install_root='./'):
+def deal_single_pkg(pkg_gz_file=None, install_root='./'):
     pkg_gz_file_dir = os.path.dirname(pkg_gz_file)
 
     cmd = 'tar -zxvf {0} -C {1}'.format(pkg_gz_file, pkg_gz_file_dir)
@@ -32,7 +44,7 @@ def deal_single_pkg(pkg_gz_file, install_root='./'):
     project_src_deps = os.path.join(install_root, 'src', 'deps', pkg_name)
 
     if not os.path.exists(project_src_deps):
-        os.makedirs(project_src_deps)
+        os.makedirs(project_src_deps, exist_ok=True)
 
     if os.path.exists(pkg_src_wdl):
         cmd = 'cp -r {0}/* {1}'.format(pkg_src_wdl, project_src_deps)
@@ -47,7 +59,7 @@ def deal_single_pkg(pkg_gz_file, install_root='./'):
     project_doc_deps = os.path.join(install_root, 'doc', 'deps', pkg_name)
 
     if not os.path.exists(project_doc_deps):
-        os.makedirs(project_doc_deps)
+        os.makedirs(project_doc_deps, exist_ok=True)
 
     if os.path.exists(pkg_doc):
         cmd = 'cp -r {0}/* {1}'.format(pkg_doc, project_doc_deps)
@@ -59,7 +71,7 @@ def deal_single_pkg(pkg_gz_file, install_root='./'):
     project_docker_deps = os.path.join(install_root, 'docker', 'deps', pkg_name)
 
     if not os.path.exists(project_docker_deps):
-        os.makedirs(project_docker_deps)
+        os.makedirs(project_docker_deps, exist_ok=True)
 
     if os.path.exists(pkg_docker):
         cmd = 'cp -r {0}/* {1}'.format(pkg_docker, project_docker_deps)
@@ -88,7 +100,7 @@ def install_pkgs(pkg_gz_files=None, install_root='./'):
 
     for pkg_gz_file in pkg_gz_files:
         deal_single_pkg(
-            pkg_gz_file=pkg_gz_files,
+            pkg_gz_file=pkg_gz_file,
             install_root=install_root)
 
 
@@ -99,7 +111,7 @@ def main(parser=None, paras=None):
 
     parser = get_para(parser)
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 or len(paras) == 0:
         parser.print_help()
         sys.exit()
 
@@ -109,13 +121,23 @@ def main(parser=None, paras=None):
 
     print(args)
 
+    if (not args.pkg_gz_files_listFile) and (not args.pkg_info_file):
+        sys.exit('You must specify either -i or -j option!')
+
     pkg_gz_files = []
-    with open(args.pkg_gz_files_listFile, 'r') as fh:
-        for i in fh:
-            i = i.strip()
-            if not i:
-                continue
-            pkg_gz_files.append(i)
+
+    if args.pkg_gz_files_listFile:
+        with open(args.pkg_gz_files_listFile, 'r') as fh:
+            for i in fh:
+                i = i.strip()
+                if not i:
+                    continue
+                pkg_gz_files.append(i)
+    else:
+        pkg_gz_files = fetch_pkgs(
+            base_url=args.base_url,
+            cache_dir=args.cache_dir,
+            pkg_info_file=args.pkg_info_file)
 
     install_pkgs(
         pkg_gz_files=pkg_gz_files,

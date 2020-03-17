@@ -2,7 +2,7 @@
 import sys
 import argparse
 
-from utility import read_pkg_info, download_file, get_dep_pkgs
+from .utility import read_pkg_info, download_file, get_dep_pkgs
 
 
 def get_para(parser):
@@ -26,9 +26,12 @@ def fetch_pkgs(base_url='127.0.0.1:8000/', cache_dir='./', pkg_info_file=None):
 
     local_metadata_file = download_file(remote_metadata_file, cache_dir)
 
+    print('get local_metadata_file', local_metadata_file)
+
     pkg_info = read_pkg_info(pkg_info_file)
     query_pkg_version = pkg_info['deps']
 
+    print('query_pkg_version', query_pkg_version)
 
     # get the package ids
     pkg_ids = get_dep_pkgs(
@@ -52,7 +55,7 @@ def main(parser=None, paras=None):
 
     parser = get_para(parser)
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 or len(paras) == 0:
         parser.print_help()
         sys.exit()
 

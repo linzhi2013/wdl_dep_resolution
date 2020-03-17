@@ -2,16 +2,16 @@
 import argparse
 import sys
 
-from fetch import main as fetch_main
-from install import main as install_main
-from submit import main as submit_main
-from create_module import main as create_module_main
-from create_project import main as create_project_main
-from distribute import main as distribute_main
+from .fetch import main as fetch_main
+from .install import main as install_main
+from .submit import main as submit_main
+from .create_module import main as create_module_main
+from .create_project import main as create_project_main
+from .distribute import main as distribute_main
 
 
 def get_para():
-    parser = argparse.ArgumentParser(description='wmlpmt tool. By Guanliang Meng')
+    parser = argparse.ArgumentParser(description='wmlpmt tool. https://github.com/linzhi2013/wdl_dep_resolution. By Guanliang Meng')
 
     subparsers = parser.add_subparsers(title='subcommands', dest='subcommand')
 

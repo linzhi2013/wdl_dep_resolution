@@ -11,4 +11,7 @@ class Package(models.Model):
     version = models.CharField(max_length=10)
     deps = models.CharField(max_length=1000)
     file = models.FileField(upload_to=get_upload_path)
+    author = models.CharField(max_length=100)
+    project_url = models.CharField(max_length=500)
+    description = models.TextField()
 

@@ -4,12 +4,12 @@ import re
 import collections
 import requests
 
-from version_solver import pkg_verison_solver
+from .version_solver import pkg_verison_solver
 
 
 def download_file(url, outdir='./'):
     if not os.path.exists(outdir):
-        os.makedirs(outdir)
+        os.makedirs(outdir, exist_ok=True)
 
     # NOTE the stream=True parameter below
 
@@ -75,7 +75,7 @@ def login_db(session, url, username, password):
     return session
 
 
-def get_metadata_dict(metadata_file):
+def get_metadata_dict(metadata_file=None):
     metadata_dict = collections.defaultdict(dict)
     with open(metadata_file, 'r') as fh:
         for i in fh:
@@ -86,6 +86,8 @@ def get_metadata_dict(metadata_file):
             pkg_id, pkg_name, pkg_version = line[0:3]
             metadata_dict[pkg_name][pkg_version] = pkg_id
 
+    return metadata_dict
+
 
 def get_dep_pkgs(metadata_file=None, query_pkg_version=None):
     '''return a list of the pkg_id on metadata_file
@@ -94,7 +96,7 @@ def get_dep_pkgs(metadata_file=None, query_pkg_version=None):
         metadata_file=metadata_file,
         query_pkg_version=query_pkg_version)
 
-    metadata_dict = get_metadata_dict(metadata_file)
+    metadata_dict = get_metadata_dict(metadata_file=metadata_file)
 
     pkg_ids = []
     for pkg_name, ver in result.decisions.items():

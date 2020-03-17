@@ -23,31 +23,31 @@ def make_project_dirs(project_path=None):
 
     # src/wdl
     src_wdl_dir = os.path.join(project_path, 'src', 'wdl')
-    os.makedirs(src_wdl_dir)
+    os.makedirs(src_wdl_dir, exist_ok=True)
 
     # src/deps
     src_deps_dir = os.path.join(project_path, 'src', 'deps')
-    os.makedirs(src_deps_dir)
+    os.makedirs(src_deps_dir, exist_ok=True)
 
     # doc
     doc_dir = os.path.join(project_path, 'doc')
-    os.makedirs(doc_dir)
+    os.makedirs(doc_dir, exist_ok=True)
 
     # doc/deps
     doc_deps_dir = os.path.join(project_path, 'doc', 'deps')
-    os.makedirs(doc_deps_dir)
+    os.makedirs(doc_deps_dir, exist_ok=True)
 
     # docker
     docker_dir = os.path.join(project_path, 'docker')
-    os.makedirs(docker_dir)
+    os.makedirs(docker_dir, exist_ok=True)
 
     # docker/deps
     docker_deps_dir = os.path.join(project_path, 'docker', 'deps')
-    os.makedirs(docker_deps_dir)
+    os.makedirs(docker_deps_dir, exist_ok=True)
 
     # test
     test_dir = os.path.join(project_path, 'test')
-    os.makedirs(test_dir)
+    os.makedirs(test_dir, exist_ok=True)
 
 
 def create_pkg_info(project_path=None):
@@ -59,6 +59,9 @@ def create_pkg_info(project_path=None):
     content = '''name: {project_name}
 version: 1.0.0
 deps:
+author:
+project_url:
+description:
 
 # lines start with '#' will be omitted.
 # the dependencies can be specified like:
@@ -160,7 +163,7 @@ def main(parser=None, paras=None):
 
     parser = get_para(parser)
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 or len(paras) == 0:
         parser.print_help()
         sys.exit()
 

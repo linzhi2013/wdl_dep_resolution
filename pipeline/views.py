@@ -20,6 +20,7 @@ from django.conf import settings
 import os
 import re
 import subprocess
+import sys
 
 def index(request):
     pkg_list = Package.objects.order_by('name')
@@ -58,10 +59,13 @@ def upload_file(request):
                 return HttpResponse('package: {pkg_name}<{version}> already exists!!\nYou must use a new version number!'.format(pkg_name=pkg_name, version=version))
 
             temp_file_path = file_obj.temporary_file_path()
-            pkg_deps = get_pkg_deps(temp_file_path, file_name)
+            pkg_deps, author, project_url, description = get_pkg_info(temp_file_path, file_name)
+
+            print('pkg_deps, author, project_url, description')
+            print(pkg_deps, author, project_url, description)
 
             # save the newly uploaded file
-            instance = Package(name=pkg_name, version=version, deps=pkg_deps, file=file_obj)
+            instance = Package(name=pkg_name, version=version, deps=pkg_deps, file=file_obj, author=author, project_url=project_url, description=description)
             instance.save()
 
             return HttpResponse('uploaded!')
@@ -85,11 +89,11 @@ def download_pkg(request, pkg_id):
     raise Http404
 
 
-def get_pkg_deps(temp_file_path, file_name):
+def get_pkg_info(temp_file_path, file_name):
     # extract the tarball file
     cache_dir = os.path.join(settings.MEDIA_ROOT, 'wdl_cache')
     if not os.path.exists(cache_dir):
-        os.makedirs(cache_dir)
+        os.makedirs(cache_dir, exist_ok=True)
 
     cache_pkg_tarfile = "{cache_dir}/{file_name}".format(cache_dir=cache_dir, file_name=file_name)
     cache_pkg_tarfile = os.path.abspath(cache_pkg_tarfile)
@@ -105,6 +109,9 @@ def get_pkg_deps(temp_file_path, file_name):
     # get the deps
     pkg_info_file = os.path.join(cache_pkg_dir, 'pkg_info.txt')
 
+    author = ''
+    project_url = ''
+    description = ''
     deps = []
     if os.path.exists(pkg_info_file):
         with open(pkg_info_file, 'r') as fh:
@@ -119,12 +126,21 @@ def get_pkg_deps(temp_file_path, file_name):
                     for k in dep:
                         k = k.strip()
                         deps.append(k)
+                elif key == 'author':
+                    author = value
+                elif key == 'project_url':
+                    project_url = value
+                elif key == 'description':
+                    description = value
+    else:
+        print('can not find', pkg_info_file, file=sys.stderr)
+
     pkg_deps = ','.join(deps)
 
     cmd3 = 'rm -rf {}/*'.format(cache_dir)
     subprocess.check_call(cmd3, shell=True)
 
-    return pkg_deps
+    return pkg_deps, author, project_url, description
 
 
 def download_metadata_file(request):

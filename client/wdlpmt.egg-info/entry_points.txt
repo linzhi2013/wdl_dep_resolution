@@ -1,0 +1,3 @@
+[console_scripts]
+wdlpmt = wdlpmt.wdlpmt:get_para
+

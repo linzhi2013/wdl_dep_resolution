@@ -92,7 +92,7 @@ import src/wdl/{module_name}/Tasks/single_function_task.wdl as my_fun
 
 Then in the workflow section you can call it like this:
 
-call my_fun.copyFileTask as RuncopyFileTask {
+call my_fun.copyFileTask as RuncopyFileTask {{
     input:
         in_file = in_file,
         out_file = out_file,
@@ -101,7 +101,7 @@ call my_fun.copyFileTask as RuncopyFileTask {
         workdir = workdir,
         root = root,
         mem_size = mem_size,
-}
+}}
 
 
 
@@ -172,16 +172,16 @@ def create_module(project_root='./', module_name='my_module'):
     if os.path.exists(module_path):
         sys.exit(module_path + ' exists! Exit!')
 
-    os.makedirs(module_path)
+    os.makedirs(module_path, exist_ok=True)
 
     Tasks_dir = os.path.join(module_path, 'Tasks')
-    os.makedirs(Tasks_dir)
+    os.makedirs(Tasks_dir, exist_ok=True)
 
     TestTasks_dir = os.path.join(module_path, 'TestTasks')
-    os.makedirs(TestTasks_dir)
+    os.makedirs(TestTasks_dir, exist_ok=True)
 
     Workflow_dir = os.path.join(module_path, 'Workflow')
-    os.makedirs(Workflow_dir)
+    os.makedirs(Workflow_dir, exist_ok=True)
 
     create_readme(
         project_root=project_root,
