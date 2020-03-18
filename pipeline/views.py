@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from .forms import PackageForm
-from .models import Package
+from .models import Package, PkgFile
 from django.template import loader
 
 from django.conf import settings
@@ -16,11 +16,13 @@ from django.http import HttpResponse, Http404
 from django.contrib.auth import logout
 from django.conf import settings
 
+from haystack.generic_views import SearchView
 
 import os
 import re
 import subprocess
 import sys
+import glob
 
 def index(request):
     pkg_list = Package.objects.order_by('name')
@@ -59,14 +61,18 @@ def upload_file(request):
                 return HttpResponse('package: {pkg_name}<{version}> already exists!!\nYou must use a new version number!'.format(pkg_name=pkg_name, version=version))
 
             temp_file_path = file_obj.temporary_file_path()
-            pkg_deps, author, project_url, description = get_pkg_info(temp_file_path, file_name)
+            pkg_deps, author, project_url, description, decompressed_pkg_dir = get_pkg_info(temp_file_path, file_name)
 
-            print('pkg_deps, author, project_url, description')
-            print(pkg_deps, author, project_url, description)
+            print('pkg_deps, author, project_url, description', 'decompressed_pkg_dir')
+            print(pkg_deps, author, project_url, description, decompressed_pkg_dir)
 
             # save the newly uploaded file
             instance = Package(name=pkg_name, version=version, deps=pkg_deps, file=file_obj, author=author, project_url=project_url, description=description)
             instance.save()
+
+            # save each WDL file content
+            package = Package.objects.get(id=instance.id)
+            extract_file_content(decompressed_pkg_dir=decompressed_pkg_dir, package=package)
 
             return HttpResponse('uploaded!')
     else:
@@ -91,23 +97,24 @@ def download_pkg(request, pkg_id):
 
 def get_pkg_info(temp_file_path, file_name):
     # extract the tarball file
-    cache_dir = os.path.join(settings.MEDIA_ROOT, 'wdl_cache')
-    if not os.path.exists(cache_dir):
-        os.makedirs(cache_dir, exist_ok=True)
+    decompressedFiles_dir = os.path.join(settings.MEDIA_ROOT, 'decompressedFiles')
+    if not os.path.exists(decompressedFiles_dir):
+        os.makedirs(decompressedFiles_dir, exist_ok=True)
 
-    cache_pkg_tarfile = "{cache_dir}/{file_name}".format(cache_dir=cache_dir, file_name=file_name)
-    cache_pkg_tarfile = os.path.abspath(cache_pkg_tarfile)
 
-    cmd = "cp {temp_file_path} {cache_pkg_tarfile}".format(temp_file_path=temp_file_path, cache_pkg_tarfile=cache_pkg_tarfile)
+    decompressed_pkg_tarfile = "{decompressedFiles_dir}/{file_name}".format(decompressedFiles_dir=decompressedFiles_dir, file_name=file_name)
+    decompressed_pkg_tarfile = os.path.abspath(decompressed_pkg_tarfile)
+
+    cmd = "cp {temp_file_path} {decompressed_pkg_tarfile}".format(temp_file_path=temp_file_path, decompressed_pkg_tarfile=decompressed_pkg_tarfile)
     subprocess.check_call(cmd, shell=True)
 
 
-    cache_pkg_dir = os.path.join(cache_dir, file_name).replace('.tar.gz', '')
-    cmd2 = 'tar -zxf {0} -C {1}'.format(cache_pkg_tarfile, cache_dir)
+    decompressed_pkg_dir = os.path.join(decompressedFiles_dir, file_name).replace('.tar.gz', '')
+    cmd2 = 'tar -zxf {0} -C {1}'.format(decompressed_pkg_tarfile, decompressedFiles_dir)
     subprocess.check_call(cmd2, shell=True)
 
     # get the deps
-    pkg_info_file = os.path.join(cache_pkg_dir, 'pkg_info.txt')
+    pkg_info_file = os.path.join(decompressed_pkg_dir, 'pkg_info.txt')
 
     author = ''
     project_url = ''
@@ -137,10 +144,21 @@ def get_pkg_info(temp_file_path, file_name):
 
     pkg_deps = ','.join(deps)
 
-    cmd3 = 'rm -rf {}/*'.format(cache_dir)
+    cmd3 = 'rm -rf {}'.format(decompressed_pkg_tarfile)
     subprocess.check_call(cmd3, shell=True)
 
-    return pkg_deps, author, project_url, description
+    return pkg_deps, author, project_url, description, decompressed_pkg_dir
+
+
+def extract_file_content(decompressed_pkg_dir=None, package=None):
+    wdl_files = glob.glob(decompressed_pkg_dir + '/**/*.wdl', recursive=True)
+    print('wdl_files', wdl_files)
+    for f in wdl_files:
+        with open(f, 'r') as fh:
+            content = '\n'.join(fh.readlines())
+        f_path = f.split('decompressedFiles/')[-1]
+        instance = PkgFile(package=package, file_path=f_path, content=content)
+        instance.save()
 
 
 def download_metadata_file(request):
@@ -162,3 +180,5 @@ def download_metadata_file(request):
 def logout_view(request):
     logout(request)
     return index(request)
+
+

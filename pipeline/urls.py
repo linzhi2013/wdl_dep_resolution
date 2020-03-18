@@ -1,8 +1,9 @@
-from django.urls import path
+from django.urls import path,include
 
 from . import views
 
 urlpatterns = [
+    path('search/', include('haystack.urls'), name='search_view'),
     path('', views.index, name='index'),
     path('upload/', views.upload_file, name='upload'),
     path('<int:pkg_id>/', views.pkg_detail, name='pkg_detail'),

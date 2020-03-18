@@ -33,8 +33,17 @@ FILE_UPLOAD_HANDLERS = [
 ]
 
 # Application definition
-
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+    },
+}
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+HAYSTACK_FUZZY_MIN_SIM = 0.5
+HAYSTACK_FUZZY_MAX_EXPANSIONS = 80
 INSTALLED_APPS = [
+    'haystack',
     'pipeline.apps.PipelineConfig',
     'django.contrib.admin',
     'django.contrib.auth',
