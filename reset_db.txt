@@ -11,3 +11,5 @@ rm -rf reposity/
 python manage.py makemigrations
 python manage.py migrate
 python3 manage.py  createsuperuser
+
+mkdir reposity && cd reposity/ && git clone http://gitlab.grandomics.com/med_bioinfo/med_research_wdl_repo.git

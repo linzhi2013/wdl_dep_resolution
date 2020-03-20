@@ -1,0 +1,3 @@
+django-haystack
+whoosh
+django==2.2

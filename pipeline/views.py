@@ -163,7 +163,7 @@ def extract_file_content(decompressed_pkg_dir=None, package=None):
     for f in wdl_files:
         with open(f, 'r') as fh:
             content = '\n'.join(fh.readlines())
-        f_path = f.split('decompressedFiles/')[-1]
+        f_path = f.split('med_research_wdl_repo/')[-1]
         instance = PkgFile(package=package, file_path=f_path, content=content)
         instance.save()
 
