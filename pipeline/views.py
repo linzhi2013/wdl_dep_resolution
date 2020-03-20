@@ -74,6 +74,13 @@ def upload_file(request):
             package = Package.objects.get(id=instance.id)
             extract_file_content(decompressed_pkg_dir=decompressed_pkg_dir, package=package)
 
+
+            # push to gitlab
+            push_to_gitlab(
+                gitconfig='~/.config/git/config',
+                project_dir = os.path.dirname(decompressed_pkg_dir),
+                pkg_name=file_name)
+
             return HttpResponse('uploaded!')
     else:
         form = PackageForm()
@@ -180,5 +187,20 @@ def download_metadata_file(request):
 def logout_view(request):
     logout(request)
     return index(request)
+
+
+def push_to_gitlab(gitconfig=None, project_dir=None, pkg_name=None):
+    cmd = "git config -f {gitconfig}".format(gitconfig=gitconfig)
+    subprocess.check_call(cmd, shell=True)
+
+    os.chdir(project_dir)
+    cmd = "git add -A"
+    subprocess.check_call(cmd, shell=True)
+
+    cmd = '''git commit -m "add {pkg_name}"'''.format(pkg_name=pkg_name)
+    subprocess.check_call(cmd, shell=True)
+
+    cmd = "git push origin master"
+    subprocess.check_call(cmd, shell=True)
 
 
