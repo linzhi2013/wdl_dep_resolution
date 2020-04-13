@@ -1,0 +1,36 @@
+https://simpleisbetterthancomplex.com/tutorial/2016/07/26/how-to-reset-migrations.html
+
+# create a django-2.2 enviroment
+conda create -n django-2.2 python=3
+pip install -f requirement.txt
+
+# conda activate /sfs-grand-med-research/home/menggl/soft/bio/miniconda3/envs/django-2.2
+
+# activate the environment!!
+conda activate django-2.2
+
+
+
+# reset whole db, discard all data
+
+find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+find . -path "*/migrations/*.pyc"  -delete
+
+rm -rf db.sqlite3
+rm -rf reposity/
+
+python manage.py makemigrations
+python manage.py migrate
+python manage.py  createsuperuser
+python manage.py runserver 1>m.log 2>m.err
+
+
+# to visit the website via ssh on your browser, on the terminal
+ssh -t menggl@114.115.201.79  -L 8000:127.0.0.1:8000
+# then open 127.0.0.1:8000/pipeline/ to view list of pakcages
+# open 127.0.0.1:8000/pipeline/search to search for something you want
+
+# You must make sure you do not need password to access to the gitlab
+# Because this server will use 'git' command to push your data to a gitlab server!
+
+
