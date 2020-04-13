@@ -108,17 +108,11 @@ def get_pkg_info(temp_file_path, file_name):
         os.makedirs(decompressedFiles_dir, exist_ok=True)
 
     decompressed_pkg_tarfile =os.path.abspath(os.path.join(decompressedFiles_dir, file_name))
-    pkg_tarfile = os.path.abspath(os.path.join(settings.MEDIA_ROOT, 'repo', file_name))
-
     decompressed_pkg_dir = os.path.join(decompressedFiles_dir, file_name).replace('.tar.gz', '')
 
     # delete previous files
     if os.path.exists(decompressed_pkg_dir):
         cmd = 'rm -rf {}'.format(decompressed_pkg_dir)
-        subprocess.check_call(cmd, shell=True)
-
-    if os.path.exists(pkg_tarfile):
-        cmd = 'rm -rf {}'.format(pkg_tarfile)
         subprocess.check_call(cmd, shell=True)
 
     if os.path.exists(decompressed_pkg_tarfile):
@@ -223,6 +217,7 @@ def push_to_gitlab(project_dir=None, pkg_name=None):
 
             cmd = 'git remote add origin {0}'.format(settings.GITLAB_URL)
             subprocess.check_call(cmd, shell=True)
+
 
         cmd = "git pull origin master"
         subprocess.check_call(cmd, shell=True)
