@@ -60,6 +60,8 @@ def upload_file(request):
             if old_pkgs:
                 return HttpResponse('package: {pkg_name}<{version}> already exists!!\nYou must use a new version number!'.format(pkg_name=pkg_name, version=version))
 
+            initialize_repo(project_dir=settings.GITLAB_DIR)
+
             temp_file_path = file_obj.temporary_file_path()
             pkg_deps, author, project_url, description, decompressed_pkg_dir = get_pkg_info(temp_file_path, file_name)
 
@@ -196,6 +198,24 @@ def logout_view(request):
     return index(request)
 
 
+def initialize_repo(project_dir=None):
+    '''
+    do this before you write new files to the project_dir!!
+    '''
+    hidden_git_folder = os.path.join(project_dir, '.git')
+    os.chdir(project_dir)
+
+    if not os.path.exists(hidden_git_folder):
+        cmd = 'git init'
+        subprocess.check_call(cmd, shell=True)
+
+        cmd = 'git remote add origin {0}'.format(settings.GITLAB_URL)
+        subprocess.check_call(cmd, shell=True)
+
+    cmd = "git pull origin master"
+    subprocess.check_call(cmd, shell=True)
+
+
 def push_to_gitlab(project_dir=None, pkg_name=None):
     '''
     cd <localdir>
@@ -209,15 +229,6 @@ def push_to_gitlab(project_dir=None, pkg_name=None):
 
     try:
         os.chdir(project_dir)
-
-        hidden_git_folder = os.path.join(project_dir, '.git')
-        if not os.path.exists(hidden_git_folder):
-            cmd = 'git init'
-            subprocess.check_call(cmd, shell=True)
-
-            cmd = 'git remote add origin {0}'.format(settings.GITLAB_URL)
-            subprocess.check_call(cmd, shell=True)
-
 
         cmd = "git pull origin master"
         subprocess.check_call(cmd, shell=True)
