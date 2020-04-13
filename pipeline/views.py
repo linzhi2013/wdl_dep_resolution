@@ -202,6 +202,9 @@ def initialize_repo(project_dir=None):
     '''
     do this before you write new files to the project_dir!!
     '''
+    if not os.path.exists(project_dir):
+        os.makedirs(project_dir, exist_ok=True)
+
     hidden_git_folder = os.path.join(project_dir, '.git')
     os.chdir(project_dir)
 
