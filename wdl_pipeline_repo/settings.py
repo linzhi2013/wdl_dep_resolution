@@ -134,4 +134,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'reposity')
-
+GITLAB_repo_DIR = os.path.join(MEDIA_ROOT, 'gitlab_wdl')
+GITLAB_repo_url = 'http://gitlab.grandomics.com/med_bioinfo/med_research_wdl_repo'

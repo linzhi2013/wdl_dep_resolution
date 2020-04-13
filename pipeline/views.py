@@ -104,9 +104,19 @@ def download_pkg(request, pkg_id):
 
 def get_pkg_info(temp_file_path, file_name):
     # extract the tarball file
-    decompressedFiles_dir = os.path.join(settings.MEDIA_ROOT, 'decompressedFiles')
+    decompressedFiles_dir = settings.GITLAB_repo_DIR
+
     if not os.path.exists(decompressedFiles_dir):
         os.makedirs(decompressedFiles_dir, exist_ok=True)
+        os.chdir(decompressedFiles_dir)
+
+        cmd = 'git init'
+        subprocess.check_call(cmd, shell=True)
+
+        cmd = 'git remote add origin {0}'.format(settings.GITLAB_repo_url)
+
+        cmd = "git pull origin master"
+        subprocess.check_call(cmd, shell=True)
 
 
     decompressed_pkg_tarfile = "{decompressedFiles_dir}/{file_name}".format(decompressedFiles_dir=decompressedFiles_dir, file_name=file_name)
@@ -190,17 +200,34 @@ def logout_view(request):
 
 
 def push_to_gitlab(gitconfig=None, project_dir=None, pkg_name=None):
-    cmd = "git config -f {gitconfig}".format(gitconfig=gitconfig)
-    subprocess.check_call(cmd, shell=True)
+    '''
+    cd <localdir>
+    git init
+    git add .
+    git commit -m 'message'
+    git remote add origin <url>
+    git push -u origin master
 
-    os.chdir(project_dir)
-    cmd = "git add -A"
-    subprocess.check_call(cmd, shell=True)
+    '''
+#    cmd = "git config -f {gitconfig}".format(gitconfig=gitconfig)
+#    subprocess.check_call(cmd, shell=True)
+    try:
+        os.chdir(project_dir)
 
-    cmd = '''git commit -m "add {pkg_name}"'''.format(pkg_name=pkg_name)
-    subprocess.check_call(cmd, shell=True)
+        cmd = "git pull origin master"
+        subprocess.check_call(cmd, shell=True)
 
-    cmd = "git push origin master"
-    subprocess.check_call(cmd, shell=True)
+        cmd = "git add -A"
+        subprocess.check_call(cmd, shell=True)
+
+        cmd = '''git commit -m "add {pkg_name}"'''.format(pkg_name=pkg_name)
+        subprocess.check_call(cmd, shell=True)
+
+        cmd = "git push origin master"
+        subprocess.check_call(cmd, shell=True)
+    except Exception as e:
+        print('push_to_gitlab failed!', file=sys.stderr)
+        print(e, file=sys.stderr)
+
 
 

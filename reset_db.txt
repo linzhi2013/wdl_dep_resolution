@@ -12,4 +12,11 @@ python manage.py makemigrations
 python manage.py migrate
 python3 manage.py  createsuperuser
 
-mkdir reposity && cd reposity/ && git clone http://gitlab.grandomics.com/med_bioinfo/med_research_wdl_repo.git
+
+# to visit the website via ssh on your browser, on the terminal
+ssh -t menggl@114.115.201.79  -L 8000:127.0.0.1:8000
+# then open 127.0.0.1:8000/pipeline/ to view list of pakcages
+# open 127.0.0.1:8000/pipeline/search to search for something you want
+
+# You must make sure you do not need password to access to the gitlab
+# Because this server will use 'git' command to push your data to a gitlab server!
