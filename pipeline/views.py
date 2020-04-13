@@ -107,19 +107,6 @@ def get_pkg_info(temp_file_path, file_name):
     if not os.path.exists(decompressedFiles_dir):
         os.makedirs(decompressedFiles_dir, exist_ok=True)
 
-    if settings.UPLOAD_TO_GITLAB:
-        os.chdir(settings.GITLAB_DIR)
-
-        cmd = 'git init'
-        subprocess.check_call(cmd, shell=True)
-
-        cmd = 'git remote add origin {0}'.format(settings.GITLAB_URL)
-        subprocess.check_call(cmd, shell=True)
-
-        cmd = "git pull origin master"
-        subprocess.check_call(cmd, shell=True)
-
-
     decompressed_pkg_tarfile =os.path.abspath(os.path.join(decompressedFiles_dir, file_name))
     pkg_tarfile = os.path.abspath(os.path.join(settings.MEDIA_ROOT, 'repo', file_name))
 
@@ -228,6 +215,14 @@ def push_to_gitlab(project_dir=None, pkg_name=None):
 
     try:
         os.chdir(project_dir)
+
+        hidden_git_folder = os.path.join(project_dir, '.git')
+        if not os.path.exists(hidden_git_folder):
+            cmd = 'git init'
+            subprocess.check_call(cmd, shell=True)
+
+            cmd = 'git remote add origin {0}'.format(settings.GITLAB_URL)
+            subprocess.check_call(cmd, shell=True)
 
         cmd = "git pull origin master"
         subprocess.check_call(cmd, shell=True)
