@@ -128,6 +128,11 @@ def get_pkg_info(temp_file_path, file_name):
 
 
     decompressed_pkg_dir = os.path.join(decompressedFiles_dir, file_name).replace('.tar.gz', '')
+
+    if os.path.exists(decompressed_pkg_dir):
+        cmd = 'rm -rf {}'.format(decompressed_pkg_dir)
+        subprocess.check_call(cmd, shell=True)
+
     cmd2 = 'tar -zxf {0} -C {1}'.format(decompressed_pkg_tarfile, decompressedFiles_dir)
     subprocess.check_call(cmd2, shell=True)
 
