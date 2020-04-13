@@ -104,7 +104,7 @@ def download_pkg(request, pkg_id):
 
 def get_pkg_info(temp_file_path, file_name):
     # extract the tarball file
-    decompressedFiles_dir = settings.GITLAB_repo_DIR
+    decompressedFiles_dir = settings.GITLAB_DIR
 
     if not os.path.exists(decompressedFiles_dir):
         os.makedirs(decompressedFiles_dir, exist_ok=True)
@@ -113,7 +113,7 @@ def get_pkg_info(temp_file_path, file_name):
         cmd = 'git init'
         subprocess.check_call(cmd, shell=True)
 
-        cmd = 'git remote add origin {0}'.format(settings.GITLAB_repo_url)
+        cmd = 'git remote add origin {0}'.format(settings.GITLAB_URL)
 
         cmd = "git pull origin master"
         subprocess.check_call(cmd, shell=True)
