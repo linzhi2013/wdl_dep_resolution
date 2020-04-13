@@ -114,6 +114,7 @@ def get_pkg_info(temp_file_path, file_name):
         subprocess.check_call(cmd, shell=True)
 
         cmd = 'git remote add origin {0}'.format(settings.GITLAB_URL)
+        subprocess.check_call(cmd, shell=True)
 
         cmd = "git pull origin master"
         subprocess.check_call(cmd, shell=True)
