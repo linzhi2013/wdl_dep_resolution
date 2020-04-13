@@ -17,13 +17,6 @@ class Package(models.Model):
     description = models.TextField()
 
 
-def get_upload_path2(instance, filename):
-    # should not use settings.media_root in this join
-    print('instance.name', instance.name)
-    print('filename', filename)
-    return os.path.join('decompressedFiles', instance.name, filename)
-
-
 class PkgFile(models.Model):
     package = models.ForeignKey(Package, on_delete=models.CASCADE)
     file_path = models.CharField(max_length=900)

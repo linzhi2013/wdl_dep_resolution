@@ -45,7 +45,7 @@ def upload_file(request):
         if form.is_valid():
             file_obj = request.FILES['file']
             file_name = os.path.basename(file_obj.name)
-            print('got file name', file_name)
+            print('uploaded file name:', file_name, flush=True)
 
             # validate file name format
             if not re.match(r'[a-z]+(\_[a-z0-9]+)*\-\d+(\.\d+)*\.tar\.gz$', file_name):
@@ -63,8 +63,6 @@ def upload_file(request):
             temp_file_path = file_obj.temporary_file_path()
             pkg_deps, author, project_url, description, decompressed_pkg_dir = get_pkg_info(temp_file_path, file_name)
 
-            print('pkg_deps, author, project_url, description', 'decompressed_pkg_dir')
-            print(pkg_deps, author, project_url, description, decompressed_pkg_dir)
 
             # save the newly uploaded file
             instance = Package(name=pkg_name, version=version, deps=pkg_deps, file=file_obj, author=author, project_url=project_url, description=description)
@@ -76,10 +74,10 @@ def upload_file(request):
 
 
             # push to gitlab
-            push_to_gitlab(
-                gitconfig='~/.config/git/config',
-                project_dir = os.path.dirname(decompressed_pkg_dir),
-                pkg_name=file_name)
+            if settings.UPLOAD_TO_GITLAB:
+                push_to_gitlab(
+                    project_dir = settings.GITLAB_DIR,
+                    pkg_name=file_name)
 
             return HttpResponse('uploaded!')
     else:
@@ -104,11 +102,13 @@ def download_pkg(request, pkg_id):
 
 def get_pkg_info(temp_file_path, file_name):
     # extract the tarball file
-    decompressedFiles_dir = settings.GITLAB_DIR
+    decompressedFiles_dir = os.path.join(settings.GITLAB_DIR, 'decompressed_files')
 
     if not os.path.exists(decompressedFiles_dir):
         os.makedirs(decompressedFiles_dir, exist_ok=True)
-        os.chdir(decompressedFiles_dir)
+
+    if settings.UPLOAD_TO_GITLAB:
+        os.chdir(settings.GITLAB_DIR)
 
         cmd = 'git init'
         subprocess.check_call(cmd, shell=True)
@@ -120,18 +120,28 @@ def get_pkg_info(temp_file_path, file_name):
         subprocess.check_call(cmd, shell=True)
 
 
-    decompressed_pkg_tarfile = "{decompressedFiles_dir}/{file_name}".format(decompressedFiles_dir=decompressedFiles_dir, file_name=file_name)
-    decompressed_pkg_tarfile = os.path.abspath(decompressed_pkg_tarfile)
+    decompressed_pkg_tarfile =os.path.abspath(os.path.join(decompressedFiles_dir, file_name))
+    pkg_tarfile = os.path.abspath(os.path.join(settings.MEDIA_ROOT, 'repo', file_name))
+
+    decompressed_pkg_dir = os.path.join(decompressedFiles_dir, file_name).replace('.tar.gz', '')
+
+    # delete previous files
+    if os.path.exists(decompressed_pkg_dir):
+        cmd = 'rm -rf {}'.format(decompressed_pkg_dir)
+        subprocess.check_call(cmd, shell=True)
+
+    if os.path.exists(pkg_tarfile):
+        cmd = 'rm -rf {}'.format(pkg_tarfile)
+        subprocess.check_call(cmd, shell=True)
+
+    if os.path.exists(decompressed_pkg_tarfile):
+        cmd = 'rm -rf {}'.format(decompressed_pkg_tarfile)
+        subprocess.check_call(cmd, shell=True)
+
 
     cmd = "cp {temp_file_path} {decompressed_pkg_tarfile}".format(temp_file_path=temp_file_path, decompressed_pkg_tarfile=decompressed_pkg_tarfile)
     subprocess.check_call(cmd, shell=True)
 
-
-    decompressed_pkg_dir = os.path.join(decompressedFiles_dir, file_name).replace('.tar.gz', '')
-
-    if os.path.exists(decompressed_pkg_dir):
-        cmd = 'rm -rf {}'.format(decompressed_pkg_dir)
-        subprocess.check_call(cmd, shell=True)
 
     cmd2 = 'tar -zxf {0} -C {1}'.format(decompressed_pkg_tarfile, decompressedFiles_dir)
     subprocess.check_call(cmd2, shell=True)
@@ -175,11 +185,11 @@ def get_pkg_info(temp_file_path, file_name):
 
 def extract_file_content(decompressed_pkg_dir=None, package=None):
     wdl_files = glob.glob(decompressed_pkg_dir + '/**/*.wdl', recursive=True)
-    print('wdl_files', wdl_files)
+    print('wdl_files:\n', wdl_files, flush=True)
     for f in wdl_files:
         with open(f, 'r') as fh:
             content = '\n'.join(fh.readlines())
-        f_path = f.split('med_research_wdl_repo/')[-1]
+        f_path = f.split('decompressed_files/')[-1]
         instance = PkgFile(package=package, file_path=f_path, content=content)
         instance.save()
 
@@ -205,7 +215,7 @@ def logout_view(request):
     return index(request)
 
 
-def push_to_gitlab(gitconfig=None, project_dir=None, pkg_name=None):
+def push_to_gitlab(project_dir=None, pkg_name=None):
     '''
     cd <localdir>
     git init
@@ -215,8 +225,7 @@ def push_to_gitlab(gitconfig=None, project_dir=None, pkg_name=None):
     git push -u origin master
 
     '''
-#    cmd = "git config -f {gitconfig}".format(gitconfig=gitconfig)
-#    subprocess.check_call(cmd, shell=True)
+
     try:
         os.chdir(project_dir)
 
@@ -231,6 +240,7 @@ def push_to_gitlab(gitconfig=None, project_dir=None, pkg_name=None):
 
         cmd = "git push origin master"
         subprocess.check_call(cmd, shell=True)
+
     except Exception as e:
         print('push_to_gitlab failed!', file=sys.stderr)
         print(e, file=sys.stderr)
